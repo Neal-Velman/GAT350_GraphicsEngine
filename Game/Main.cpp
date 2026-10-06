@@ -35,12 +35,11 @@ int main()
         // GAME
 
         // RENDER
-        Engine::Instance().GetRenderer().SetColor(0.0f, 0.0f, 0.0f);
-        Engine::Instance().GetRenderer().Clear();
+        Engine::Instance().GetRenderer().BeginFrame();
 
         Engine::Instance().GetPS().Draw(Engine::Instance().GetRenderer());
 
-        Engine::Instance().GetRenderer().Present();
+        Engine::Instance().GetRenderer().EndFrame();
     }
 
     // SHUTDOWN
