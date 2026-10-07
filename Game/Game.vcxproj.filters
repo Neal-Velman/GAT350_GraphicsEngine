@@ -29,6 +29,9 @@
     <Filter Include="Assets\SpriteGame\Tilemaps">
       <UniqueIdentifier>{8ac8fb6c-145d-491a-a62a-46335b569b60}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Shaders">
+      <UniqueIdentifier>{a55f342f-a20e-4aff-97ce-4acca5932a84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -49,5 +52,13 @@
     <None Include="..\Build\Assets\SpriteGame\Scenes\level.json">
       <Filter>Assets\SpriteGame\Scenes</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\Shaders\color.frag.hlsl">
+      <Filter>Assets\Shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Shaders\position.vert.hlsl">
+      <Filter>Assets\Shaders</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
