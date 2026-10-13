@@ -5,6 +5,10 @@
 #include "Renderer/Shader.h"
 
 #include "Resources/ResourceManager.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 using namespace nu;
 namespace nu {
@@ -62,6 +66,13 @@ int main()
     float scale = 0.5f;
     Color4 color { 0, 0, 0, 1 };
 
+    struct vertexUniform
+    {
+        glm::mat4 model;
+    };
+
+    vertexUniform uniform;
+
 
     // MAIN LOOP
     bool quit = false;
@@ -86,7 +97,8 @@ int main()
         float dt = Engine::Instance().GetTime().GetDeltaTime();
 
         scale = sin(Engine::Instance().GetTime().GetTime());
-        color.r = sin(Engine::Instance().GetTime().GetTime()) * 0.5 + 0.5;
+        color.r = sin(Engine::Instance().GetTime().GetTime()) * 0.5f + 0.5f;
+        color.b = sin(Engine::Instance().GetTime().GetTime()) * 0.5f + 0.5f;
 
         // RENDER
         Engine::Instance().GetRenderer().BeginFrame();
@@ -94,7 +106,22 @@ int main()
         Engine::Instance().GetRenderer().SetPipeline(*pipeline);
         Engine::Instance().GetRenderer().SetVertexBuffer(*vb);
 
-        Engine::Instance().GetRenderer().SetVertexUniform(0, &scale, sizeof(scale));
+        //uniform.model = glm::mat4(1.0f);
+
+        auto mxt = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.2f, 0.0f));
+        //auto mxr = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f) * sin(Engine::Instance().GetTime().GetTime()), glm::vec3(1.0f, 1.0f, 1.0f));
+		auto mxs = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+        auto mxr = glm::eulerAngleXYZ(1.2f * sin(Engine::Instance().GetTime().GetTime()), 0.3f * sin(Engine::Instance().GetTime().GetTime()), 0.8f);
+
+        uniform.model = mxt * mxr * mxs;
+
+        //uniform.model = glm::translate(uniform.model, glm::vec3(0.5f, -0.2f, 0.0f));
+        //uniform.model = glm::rotate(uniform.model, glm::radians(45.0f) * sin(Engine::Instance().GetTime().GetTime()) , glm::vec3(1.0f, 1.0f, 1.0f));
+        //uniform.model = glm::scale(uniform.model, glm::vec3(0.5f, 0.5f, 0.5f));
+
+        Engine::Instance().GetRenderer().SetVertexUniform(0, &uniform, sizeof(uniform));
+
+        //Engine::Instance().GetRenderer().SetVertexUniform(0, &scale, sizeof(scale));
 
         Engine::Instance().GetRenderer().SetFragmentUniform(0, &color, sizeof(color));
 
