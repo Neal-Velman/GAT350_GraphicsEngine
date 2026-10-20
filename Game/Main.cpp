@@ -5,6 +5,7 @@
 #include "Renderer/Pipeline.h"
 #include "Renderer/Shader.h"
 #include "Math/Transform.h"
+#include "Renderer/Model.h"
 
 #include "Resources/ResourceManager.h"
 
@@ -51,27 +52,48 @@ int main()
     auto ib = std::make_shared<IndexBuffer>();
     ib->Create(indices, Engine::Instance().GetRenderer());
 
+    auto model = Resources().Get<Model>("models/spot.obj", Engine::Instance().GetRenderer());
+    auto texture = Resources().Get<Texture>("textures/spot_diffuse.png", Engine::Instance().GetRenderer());
+
     auto vshader = Resources().Get<nu::Shader>("shaders/unlit.vert", Engine::Instance().GetRenderer(), 1);
-    auto fshader = Resources().Get<nu::Shader>("shaders/unlit.frag", Engine::Instance().GetRenderer(), 1);
+    auto fshader = Resources().Get<nu::Shader>("shaders/unlit.frag", Engine::Instance().GetRenderer(), 1, 1);
+
+    //auto model = Resources().Get<Model>("models/suzanne.obj", Engine::Instance().GetRenderer());
+
+    //auto vshader = Resources().Get<nu::Shader>("shaders/unlit.vert", Engine::Instance().GetRenderer(), 1);
+    //auto fshader = Resources().Get<nu::Shader>("shaders/unlit.frag", Engine::Instance().GetRenderer(), 1);
 
     auto pipeline = std::make_shared<Pipeline>();
-    pipeline->AddVertexBuffer(sizeof(Vertex));
-    // position
-    pipeline->AddVertexAttribute(
-        0,
-        SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
-        offsetof(Vertex, position));
 
-    // color
-    pipeline->AddVertexAttribute(
-        1,
-        SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
-        offsetof(Vertex, color));
-
+    pipeline->AddVertexBuffer(sizeof(Model::Vertex));
+    pipeline->AddVertexAttribute(0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, position));
+    pipeline->AddVertexAttribute(1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(Model::Vertex, texcoord));
+    pipeline->AddVertexAttribute(2, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, normal));
+    pipeline->AddVertexAttribute(3, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, tangent));
 
     pipeline->Create(*vshader.get(), *fshader.get(),
         Engine::Instance().GetRenderer().GetGPUDevice(),
         Engine::Instance().GetRenderer().GetWindow());
+
+
+    //auto pipeline = std::make_shared<Pipeline>();
+    //pipeline->AddVertexBuffer(sizeof(Vertex));
+    //// position
+    //pipeline->AddVertexAttribute(
+    //    0,
+    //    SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+    //    offsetof(Vertex, position));
+
+    //// color
+    //pipeline->AddVertexAttribute(
+    //    1,
+    //    SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
+    //    offsetof(Vertex, color));
+
+
+    //pipeline->Create(*vshader.get(), *fshader.get(),
+    //    Engine::Instance().GetRenderer().GetGPUDevice(),
+    //    Engine::Instance().GetRenderer().GetWindow());
 
 
     float scale = 0.5f;
@@ -144,17 +166,33 @@ int main()
         //MVP
         uniform.mvp = projection * view * transform.GetMatrix();
 
+
+
         Engine::Instance().GetRenderer().BeginFrame();
 
         Engine::Instance().GetRenderer().SetPipeline(*pipeline);
         Engine::Instance().GetRenderer().SetVertexBuffer(*vb);
         Engine::Instance().GetRenderer().SetIndexBuffer(*ib);
+
         Engine::Instance().GetRenderer().SetVertexUniform(0, &uniform, sizeof(uniform));
-        //Engine::Instance().GetRenderer().SetVertexUniform(0, &scale, sizeof(scale));
+        //Engine::Instance().GetRenderer().SetFragmentUniform(0, &tint, sizeof(tint));
+        
         Engine::Instance().GetRenderer().SetFragmentUniform(0, &color, sizeof(color));
-        //Engine::Instance().GetRenderer().Draw(vb->GetVertexCount());
+        Engine::Instance().GetRenderer().SetFragmentTexture(0, *texture);
+        model->Draw(Engine::Instance().GetRenderer());
+
         Engine::Instance().GetRenderer().DrawIndex(*ib);
+
         Engine::Instance().GetRenderer().EndFrame();
+
+        //Engine::Instance().GetRenderer().BeginFrame();
+
+        
+        //Engine::Instance().GetRenderer().SetVertexUniform(0, &uniform, sizeof(uniform));
+        ////Engine::Instance().GetRenderer().SetVertexUniform(0, &scale, sizeof(scale));
+        //Engine::Instance().GetRenderer().SetFragmentUniform(0, &color, sizeof(color));
+        //Engine::Instance().GetRenderer().Draw(vb->GetVertexCount());
+        //Engine::Instance().GetRenderer().EndFrame();
     }
 
     // SHUTDOWN
