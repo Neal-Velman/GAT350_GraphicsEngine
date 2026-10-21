@@ -12,8 +12,8 @@ namespace nu
 		// with SDL_ReleaseGPUSampler(device, sampler) and SDL_ReleaseGPUTexture(device, texture)
 		// todo
 		if (m_gpuDevice) {
-			SDL_ReleaseGPUSampler(m_gpuDevice, m_gpuSampler);
-			SDL_ReleaseGPUTexture(m_gpuDevice, m_gpuTexture);
+			if(m_gpuSampler) SDL_ReleaseGPUSampler(m_gpuDevice, m_gpuSampler);
+			if(m_gpuTexture) SDL_ReleaseGPUTexture(m_gpuDevice, m_gpuTexture);
 		}
 	}
 

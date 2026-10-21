@@ -33,6 +33,8 @@ namespace nu
 		void SetCamera(const Vector2& camera) { m_camera = camera; }
 		void EnableCamera(bool enable = true) { m_cameraEnabled = enable; }
 
+		// SDL_GPU Stuff
+
 		SDL_GPUDevice* GetGPUDevice() const { return m_gpuDevice; }
 		SDL_Window* GetWindow() const { return m_window; }
 
@@ -44,8 +46,9 @@ namespace nu
 
 		void SetVertexUniform(uint32_t slot, const void* data, uint32_t size);
 		void SetFragmentUniform(uint32_t slot, const void* data, uint32_t size);
-
 		void SetFragmentTexture(uint32_t slot, const class Texture& texture);
+
+		void CreateDepthBuffer();
 
 		friend class TextRenderer;
 		friend class Texture;
@@ -60,6 +63,7 @@ namespace nu
 		SDL_GPUDevice* m_gpuDevice = nullptr;
 		SDL_GPUCommandBuffer* m_commandBuffer = nullptr;
 		SDL_GPURenderPass* m_renderPass = nullptr;
+		SDL_GPUTexture* m_depthTexture = nullptr;
 
 		bool m_cameraEnabled = true;
 		Vector2 m_camera;

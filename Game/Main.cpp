@@ -55,8 +55,8 @@ int main()
     auto model = Resources().Get<Model>("models/spot.obj", Engine::Instance().GetRenderer());
     auto texture = Resources().Get<Texture>("textures/spot_diffuse.png", Engine::Instance().GetRenderer());
 
-    auto vshader = Resources().Get<nu::Shader>("shaders/unlit.vert", Engine::Instance().GetRenderer(), 1);
-    auto fshader = Resources().Get<nu::Shader>("shaders/unlit.frag", Engine::Instance().GetRenderer(), 1, 1);
+    auto vshader = Resources().Get<nu::Shader>("shaders/lit.vert", Engine::Instance().GetRenderer(), 1);
+    auto fshader = Resources().Get<nu::Shader>("shaders/lit.frag", Engine::Instance().GetRenderer(), 1, 1);
 
     //auto model = Resources().Get<Model>("models/suzanne.obj", Engine::Instance().GetRenderer());
 
@@ -152,7 +152,7 @@ int main()
 
         // TRANSFORM
 
-        transform.rotation.z = time * 10;
+        transform.rotation.y = time * 30;
 
         // RENDER
 
@@ -171,8 +171,8 @@ int main()
         Engine::Instance().GetRenderer().BeginFrame();
 
         Engine::Instance().GetRenderer().SetPipeline(*pipeline);
-        Engine::Instance().GetRenderer().SetVertexBuffer(*vb);
-        Engine::Instance().GetRenderer().SetIndexBuffer(*ib);
+        //Engine::Instance().GetRenderer().SetVertexBuffer(*vb);
+        //Engine::Instance().GetRenderer().SetIndexBuffer(*ib);
 
         Engine::Instance().GetRenderer().SetVertexUniform(0, &uniform, sizeof(uniform));
         //Engine::Instance().GetRenderer().SetFragmentUniform(0, &tint, sizeof(tint));
@@ -181,7 +181,7 @@ int main()
         Engine::Instance().GetRenderer().SetFragmentTexture(0, *texture);
         model->Draw(Engine::Instance().GetRenderer());
 
-        Engine::Instance().GetRenderer().DrawIndex(*ib);
+        //Engine::Instance().GetRenderer().DrawIndex(*ib);
 
         Engine::Instance().GetRenderer().EndFrame();
 
@@ -200,4 +200,3 @@ int main()
 
     return 0;
 }
-

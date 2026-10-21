@@ -39,7 +39,9 @@ namespace nu
 
         SDL_ClaimWindowForGPUDevice(m_gpuDevice, m_window);
 
-        std::cout << "GPU Driver: " << SDL_GetGPUDeviceDriver(m_gpuDevice) << std::endl;
+        std::cout << "GPU Driver Intialized: " << SDL_GetGPUDeviceDriver(m_gpuDevice) << std::endl;
+
+        CreateDepthBuffer();
 
         return true;
     }
@@ -62,6 +64,8 @@ namespace nu
         }
 
 
+
+
         SDL_GPUTexture* swapchainTexture = nullptr;
         if (!SDL_WaitAndAcquireGPUSwapchainTexture(m_commandBuffer, m_window, &swapchainTexture, nullptr, nullptr))
         {
@@ -78,7 +82,18 @@ namespace nu
             color_target_info.load_op = SDL_GPU_LOADOP_CLEAR;
             color_target_info.store_op = SDL_GPU_STOREOP_STORE;
 
-            m_renderPass = SDL_BeginGPURenderPass(m_commandBuffer, &color_target_info, 1, nullptr);
+
+            // configure the depth target (This handles the depth sorting)
+            SDL_GPUDepthStencilTargetInfo depth_target_info = {};
+            depth_target_info.texture = m_depthTexture;
+            depth_target_info.clear_depth = 1.0f;
+            depth_target_info.load_op = SDL_GPU_LOADOP_CLEAR;
+            depth_target_info.store_op = SDL_GPU_STOREOP_DONT_CARE;
+            depth_target_info.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
+            depth_target_info.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
+
+
+            m_renderPass = SDL_BeginGPURenderPass(m_commandBuffer, &color_target_info, 1, &depth_target_info);
         }
 
         return true;
@@ -228,7 +243,23 @@ namespace nu
             .texture = texture.m_gpuTexture,
             .sampler = texture.m_gpuSampler
         };
-
         SDL_BindGPUFragmentSamplers(m_renderPass, slot, &binding, 1);
+    }
+
+    void Renderer::CreateDepthBuffer()
+    {
+        SDL_GPUTextureCreateInfo depthInfo {
+        .type = SDL_GPU_TEXTURETYPE_2D,
+        .format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
+        .usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
+        .width = (uint32_t)m_width,
+        .height = (uint32_t)m_height,
+        .layer_count_or_depth = 1,
+        .num_levels = 1,
+        .sample_count = SDL_GPU_SAMPLECOUNT_1
+        };
+
+
+        m_depthTexture = SDL_CreateGPUTexture(m_gpuDevice, &depthInfo);
     }
 }

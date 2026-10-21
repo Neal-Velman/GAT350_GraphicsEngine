@@ -41,6 +41,7 @@ namespace nu
 
 			// todo: set the mesh index buffer on the renderer with renderer.SetIndexBuffer(indexBuffer)
 			renderer.SetIndexBuffer(*mesh.indexBuffer);
+
 			// todo: draw the mesh with renderer.DrawIndex(indexBuffer)
 			renderer.DrawIndex(*mesh.indexBuffer);
 		}
@@ -63,7 +64,7 @@ namespace nu
 		{
 			// todo: process the child node with ProcessNode(child, scene, renderer)
 			// the children are stored in node->mChildren, this is recursive so every node in the tree gets processed
-			ProcessNode(*node->mChildren, scene, renderer);
+			ProcessNode(node->mChildren[i], scene, renderer);
 		}
 	}
 
