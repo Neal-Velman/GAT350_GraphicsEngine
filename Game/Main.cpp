@@ -86,11 +86,13 @@ int main()
     struct MaterialUniform {
         glm::vec2 tiling;
         glm::vec2 offset;
+        float shininess;
     };
 
     MaterialUniform materialUniform{
-        .tiling {1.0f, 1.0f },
-        .offset {0.0f, 0.0f}
+        .tiling { 1.0f, 1.0f },
+        .offset { 0.0f, 0.0f },
+        .shininess { 64.0f }
     };
 
 
