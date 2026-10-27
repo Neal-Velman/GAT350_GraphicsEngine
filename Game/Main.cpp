@@ -18,166 +18,174 @@
 using namespace nu;
 
 enum class LightType : uint32_t {
-    Directional,
-    Point,
-    Spot
+	Directional,
+	Point,
+	Spot
 };
 
 int main()
 {
-    SetWorkingDirectory("Assets");
+	SetWorkingDirectory("Assets");
 
-    // INITIALIZATION
-    Engine::Instance().Initialize();
+	// INITIALIZATION
+	Engine::Instance().Initialize();
 
-    auto model = Resources().Get<Model>("models/spot.obj", Engine::Instance().GetRenderer());
-    auto texture = Resources().Get<Texture>("textures/spot_diffuse.png", Engine::Instance().GetRenderer());
+	auto model = Resources().Get<Model>("models/spot.obj", Engine::Instance().GetRenderer());
+	auto texture = Resources().Get<Texture>("textures/spot_diffuse.png", Engine::Instance().GetRenderer());
 
-    auto vshader = Resources().Get<nu::Shader>("shaders/gouraud.vert", Engine::Instance().GetRenderer(), 3);
-    auto fshader = Resources().Get<nu::Shader>("shaders/gouraud.frag", Engine::Instance().GetRenderer(), 1, 1);
+	auto vshader = Resources().Get<nu::Shader>("shaders/gouraud.vert", Engine::Instance().GetRenderer(), 3);
+	auto fshader = Resources().Get<nu::Shader>("shaders/gouraud.frag", Engine::Instance().GetRenderer(), 1, 1);
 
-    auto pipeline = std::make_shared<Pipeline>();
+	auto pipeline = std::make_shared<Pipeline>();
 
-    pipeline->AddVertexBuffer(sizeof(Model::Vertex));
-    pipeline->AddVertexAttribute(0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, position));
-    pipeline->AddVertexAttribute(1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(Model::Vertex, texcoord));
-    pipeline->AddVertexAttribute(2, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, normal));
-    pipeline->AddVertexAttribute(3, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, tangent));
+	pipeline->AddVertexBuffer(sizeof(Model::Vertex));
+	pipeline->AddVertexAttribute(0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, position));
+	pipeline->AddVertexAttribute(1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(Model::Vertex, texcoord));
+	pipeline->AddVertexAttribute(2, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, normal));
+	pipeline->AddVertexAttribute(3, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, tangent));
 
-    pipeline->Create(*vshader.get(), *fshader.get(),
-        Engine::Instance().GetRenderer().GetGPUDevice(),
-        Engine::Instance().GetRenderer().GetWindow());
-
-
-    //Uniforms
-    glm::vec4 color { 1, 1, 1, 1 };
-
-    struct VertexUniform
-    {
-        glm::mat4 mvp;
-        glm::mat4 model;
-        glm::vec3 cameraPosition;
-        float padding0;
-    };
-
-    VertexUniform vertexUniform;
-
-    struct LightUniform 
-    {
-        glm::vec3 position;
-        LightType type;
-        glm::vec3 direction;
-        float padding1;
-        glm::vec3 color;
-        float intensity;
-        glm::vec3 ambient;
-        float padding2;
-    };
-
-    LightUniform lightUniform{
-        .position{10, 10, 10},
-        .type{LightType::Directional},
-        .direction{ 0, -1, 0 },
-        .color{ 1, 1, 1 },
-        .intensity{ 1 },
-        .ambient{0.25f}
-    };
-
-    struct MaterialUniform {
-        glm::vec2 tiling;
-        glm::vec2 offset;
-        float shininess;
-    };
-
-    MaterialUniform materialUniform{
-        .tiling { 1.0f, 1.0f },
-        .offset { 0.0f, 0.0f },
-        .shininess { 64.0f }
-    };
+	pipeline->Create(*vshader.get(), *fshader.get(),
+		Engine::Instance().GetRenderer().GetGPUDevice(),
+		Engine::Instance().GetRenderer().GetWindow());
 
 
-    vertexUniform.cameraPosition = glm::vec3{0, 0, 5};
+	//Uniforms
+	struct VertexUniform
+	{
+		glm::mat4 mvp;
+		glm::mat4 model;
+		glm::vec3 cameraPosition;
+		float padding0;
+	};
 
-    Transform transform;
+	VertexUniform vertexUniform;
 
+	struct LightUniform
+	{
+		glm::vec3 position;
+		LightType type;
+		glm::vec3 direction;
+		float innerCutoff;
+		glm::vec3 color;
+		float intensity;
+		glm::vec3 ambient;
+		float outerCutoff;
+	};
 
-    // MAIN LOOP
-    bool quit = false;
-    while (!quit) 
-    {
-        // UPDATE
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) 
-        {
-            if (event.type == SDL_EVENT_QUIT) 
-            {
-                quit = true;
-            }
-            if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE)
-            {
-                quit = true;
-            }
-        }
+	LightUniform lightUniform{
+		.position { 10, 10, 10 },
+		.type { LightType::Directional },
+		.direction { 0, -1, 0 },
+		.innerCutoff { 0.3f },
+		.color { 1, 1, 1 },
+		.intensity { 1 },
+		.ambient { 0.25f },
+		.outerCutoff { 2.6f }
+	};
 
-        // ENGINE
-        Engine::Instance().Update();
-        float dt = Engine::Instance().GetTime().GetDeltaTime();
-        float time = Engine::Instance().GetTime().GetTime();
+	struct MaterialUniform {
+		glm::vec4 color;
+		glm::vec2 tiling;
+		glm::vec2 offset;
+		float shininess;
+	};
 
-        glm::vec3 direction{0, 0, 0};
-
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_A)) direction.x = -1;
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_D)) direction.x = +1;
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_E)) direction.y = -1;
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_Q)) direction.y = +1;
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_W)) direction.z = -1;
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_S)) direction.z = +1;
-
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_1)) lightUniform.type = LightType::Directional;
-        if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_2)) lightUniform.type = LightType::Point;
-
-
-        vertexUniform.cameraPosition += direction * 4.0f * dt;
-
-        //materialUniform.offset.x = time * 0.25;
-        //materialUniform.tiling = glm::vec2{ 20.0f };
-
-        // TRANSFORM
-
-        transform.rotation.y = time * 90;
-        //transform.rotation.x = -90;
-
-        // RENDER
-
-        // View Matrix
-        auto view = glm::lookAtRH(vertexUniform.cameraPosition, vertexUniform.cameraPosition + glm::vec3{ 0, 0, -1 }, glm::vec3{ 0, 1, 0 });
-
-        // Projection Matrix
-        float aspectRatio = Engine::Instance().GetRenderer().GetWidth() / (float)Engine::Instance().GetRenderer().GetHeight();
-        auto projection = glm::perspective(glm::radians(70.0f), aspectRatio, 0.01f, 20.0f);
-
-        //MVP
-        vertexUniform.model = transform.GetMatrix();
-        vertexUniform.mvp = projection * view * vertexUniform.model;
+	MaterialUniform materialUniform{
+		.color {1, 1, 1, 1},
+		.tiling { 1.0f, 1.0f },
+		.offset { 0.0f, 0.0f },
+		.shininess { 64.0f }
+	};
 
 
+	vertexUniform.cameraPosition = glm::vec3{ 0, 0, 5 };
 
-        Engine::Instance().GetRenderer().BeginFrame();
+	Transform transform;
 
-        Engine::Instance().GetRenderer().SetPipeline(*pipeline);
-        Engine::Instance().GetRenderer().SetVertexUniform(0, &vertexUniform, sizeof(vertexUniform));
-        Engine::Instance().GetRenderer().SetVertexUniform(1, &lightUniform, sizeof(lightUniform));
-        Engine::Instance().GetRenderer().SetVertexUniform(2, &materialUniform, sizeof(materialUniform));
-        Engine::Instance().GetRenderer().SetFragmentUniform(0, &color, sizeof(color));
-        Engine::Instance().GetRenderer().SetFragmentTexture(0, *texture);
 
-        model->Draw(Engine::Instance().GetRenderer());
+	// MAIN LOOP
+	bool quit = false;
+	while (!quit)
+	{
+		// UPDATE
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_EVENT_QUIT)
+			{
+				quit = true;
+			}
+			if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE)
+			{
+				quit = true;
+			}
+		}
 
-        Engine::Instance().GetRenderer().EndFrame();
-    }
+		// ENGINE
+		Engine::Instance().Update();
+		float dt = Engine::Instance().GetTime().GetDeltaTime();
+		float time = Engine::Instance().GetTime().GetTime();
 
-    // SHUTDOWN
-    Engine::Instance().Shutdown();    
+		glm::vec3 direction{ 0, 0, 0 };
 
-    return 0;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_A)) direction.x = -1;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_D)) direction.x = +1;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_E)) direction.y = -1;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_Q)) direction.y = +1;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_W)) direction.z = -1;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_S)) direction.z = +1;
+
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_1)) lightUniform.type = LightType::Directional;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_2)) lightUniform.type = LightType::Point;
+		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_3)) {
+			lightUniform.type = LightType::Spot;
+			lightUniform.position = glm::vec3{ 0, 6, 0 };
+			lightUniform.innerCutoff = glm::cos(glm::radians(30.0f));
+			lightUniform.outerCutoff = glm::cos(glm::radians(50.0f));
+		}
+
+
+		vertexUniform.cameraPosition += direction * 4.0f * dt;
+
+		//materialUniform.offset.x = time * 0.25;
+		//materialUniform.tiling = glm::vec2{ 20.0f };
+
+		// TRANSFORM
+
+		transform.rotation.y = time * 90;
+		//transform.rotation.x = -90;
+
+		// RENDER
+
+		// View Matrix
+		auto view = glm::lookAtRH(vertexUniform.cameraPosition, vertexUniform.cameraPosition + glm::vec3{ 0, 0, -1 }, glm::vec3{ 0, 1, 0 });
+
+		// Projection Matrix
+		float aspectRatio = Engine::Instance().GetRenderer().GetWidth() / (float)Engine::Instance().GetRenderer().GetHeight();
+		auto projection = glm::perspective(glm::radians(70.0f), aspectRatio, 0.01f, 20.0f);
+
+		//MVP
+		vertexUniform.model = transform.GetMatrix();
+		vertexUniform.mvp = projection * view * vertexUniform.model;
+
+
+
+		Engine::Instance().GetRenderer().BeginFrame();
+
+		Engine::Instance().GetRenderer().SetPipeline(*pipeline);
+		Engine::Instance().GetRenderer().SetVertexUniform(0, &vertexUniform, sizeof(vertexUniform));
+		Engine::Instance().GetRenderer().SetVertexUniform(1, &lightUniform, sizeof(lightUniform));
+		Engine::Instance().GetRenderer().SetVertexUniform(2, &materialUniform, sizeof(materialUniform));
+		Engine::Instance().GetRenderer().SetFragmentUniform(0, &materialUniform, sizeof(materialUniform));
+		Engine::Instance().GetRenderer().SetFragmentTexture(0, *texture);
+
+		model->Draw(Engine::Instance().GetRenderer());
+
+		Engine::Instance().GetRenderer().EndFrame();
+	}
+
+	// SHUTDOWN
+	Engine::Instance().Shutdown();
+
+	return 0;
 }
