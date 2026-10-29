@@ -36,8 +36,8 @@ int main()
 	auto model = Resources().Get<Model>("models/ogre.obj", Engine::Instance().GetRenderer());
 	auto texture = Resources().Get<Texture>("textures/ogre_diffuse.bmp", Engine::Instance().GetRenderer());
 
-	auto vshader = Resources().Get<nu::Shader>("shaders/phong.vert", Engine::Instance().GetRenderer(), 3);
-	auto fshader = Resources().Get<nu::Shader>("shaders/phong.frag", Engine::Instance().GetRenderer(), 3, 1);
+	auto vshader = Resources().Get<nu::Shader>("shaders/gouraud.vert", Engine::Instance().GetRenderer(), 3);
+	auto fshader = Resources().Get<nu::Shader>("shaders/gouraud.frag", Engine::Instance().GetRenderer(), 3, 1);
 
 	auto pipeline = std::make_shared<Pipeline>();
 
