@@ -6,6 +6,7 @@
 #include "Renderer/Shader.h"
 #include "Math/Transform.h"
 #include "Renderer/Model.h"
+#include "Framework/Scene.h"
 
 #include "Resources/ResourceManager.h"
 
@@ -26,12 +27,15 @@ enum class LightType : uint32_t {
 	Spot
 };
 
-int main()
-{
+int main() {
 	SetWorkingDirectory("Assets");
 
 	// INITIALIZATION
 	Engine::Instance().Initialize();
+
+	Scene scene;
+
+	scene.Load("scenes/scenes.json");
 
 	auto model = Resources().Get<Model>("models/ogre.obj", Engine::Instance().GetRenderer());
 	auto texture = Resources().Get<Texture>("textures/ogre_diffuse.bmp", Engine::Instance().GetRenderer());
@@ -53,8 +57,7 @@ int main()
 
 
 	//Uniforms
-	struct VertexUniform
-	{
+	struct VertexUniform {
 		glm::mat4 mvp;
 		glm::mat4 model;
 		glm::vec3 cameraPosition;
@@ -78,7 +81,7 @@ int main()
 		glm::vec3 padding;
 	};
 
-	Light light1{
+	Light light1 {
 		.position { 10, 10, 10 },
 		.type { LightType::Point },
 		.direction { 0, -1, 0 },
@@ -90,7 +93,7 @@ int main()
 		.outerCutoff { 1.6f }
 	};
 
-	Light light2{
+	Light light2 {
 		.position { 0, 5, 5 },
 		.type { LightType::Point },
 		.direction { 0, -1, 0 },
@@ -103,8 +106,7 @@ int main()
 	};
 
 
-	struct LightUniform
-	{
+	struct LightUniform {
 		Light lights[MAX_LIGHTS];
 		uint32_t numLights;
 		glm::vec3 ambient;
@@ -131,7 +133,7 @@ int main()
 	};
 	CHECK_UNIFORM_BOUNDARY(MaterialUniform);
 
-	MaterialUniform materialUniform{
+	MaterialUniform materialUniform {
 		.color {1, 1, 1, 1},
 		.tiling { 1.0f, 1.0f },
 		.offset { 0.0f, 0.0f },
@@ -148,18 +150,14 @@ int main()
 
 	// MAIN LOOP
 	bool quit = false;
-	while (!quit)
-	{
+	while (!quit) {
 		// UPDATE
 		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_EVENT_QUIT)
-			{
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_EVENT_QUIT) {
 				quit = true;
 			}
-			if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE)
-			{
+			if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE) {
 				quit = true;
 			}
 		}
