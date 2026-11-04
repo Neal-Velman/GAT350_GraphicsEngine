@@ -7,6 +7,7 @@
 #include "Math/Transform.h"
 #include "Renderer/Model.h"
 #include "Framework/Scene.h"
+#include "Components/CameraComponent.h"
 
 #include "Resources/ResourceManager.h"
 
@@ -35,7 +36,7 @@ int main() {
 
 	Scene scene;
 
-	scene.Load("scenes/scenes.json");
+	scene.Load("scenes/scene.json");
 
 	auto model = Resources().Get<Model>("models/ogre.obj", Engine::Instance().GetRenderer());
 	auto texture = Resources().Get<Texture>("textures/ogre_diffuse.bmp", Engine::Instance().GetRenderer());
@@ -86,7 +87,7 @@ int main() {
 		.type { LightType::Point },
 		.direction { 0, -1, 0 },
 		.range { 100 },
-		.color { 1, 1, 1 },
+		.color { 0, 1, 1 },
 		.intensity { 2.5 },
 		.ambient { 0.25f },
 		.innerCutoff { 0.3f },
@@ -94,12 +95,24 @@ int main() {
 	};
 
 	Light light2 {
-		.position { 0, 5, 5 },
-		.type { LightType::Point },
+		.position { 0, 5, 0 },
+		.type { LightType::Spot },
 		.direction { 0, -1, 0 },
 		.range { 100 },
 		.color { 1, 0, 0 },
-		.intensity { 2.5 },
+		.intensity { 5.5 },
+		.ambient { 0.25f },
+		.innerCutoff { 0.3f },
+		.outerCutoff { 1.0f }
+	};
+
+	Light light3{
+		.position { 0, 10, 10 },
+		.type { LightType::Directional },
+		.direction { 0, -1, 0 },
+		.range { 100 },
+		.color { 1, 1, 1 },
+		.intensity { 0.3 },
 		.ambient { 0.25f },
 		.innerCutoff { 0.3f },
 		.outerCutoff { 1.6f }
@@ -116,11 +129,15 @@ int main() {
 
 	lightUniform.lights[0] = light1;
 	lightUniform.lights[1] = light2;
-	lightUniform.numLights = 2;
+	lightUniform.lights[2] = light3;
+	lightUniform.numLights = 3;
 	lightUniform.ambient = glm::vec3{ 0.25f };
 
 
 	CHECK_UNIFORM_BOUNDARY(LightUniform);
+	CHECK_UNIFORM_BOUNDARY(light1);
+	CHECK_UNIFORM_BOUNDARY(light2);
+	CHECK_UNIFORM_BOUNDARY(light3);
 
 
 
@@ -140,12 +157,11 @@ int main() {
 		.shininess { 10.0f }
 	};
 
-	vertexUniform.cameraPosition = glm::vec3{ 0, 3, 10 };
 
 	Transform transform;
 	//transform.rotation.x = 90.0f;
 	//transform.rotation.y = 180.0f;
-	transform.scale = glm::vec3{ 1.0f };
+	transform.scale = glm::vec3{ 4.0f };
 
 
 	// MAIN LOOP
@@ -167,36 +183,11 @@ int main() {
 		float dt = Engine::Instance().GetTime().GetDeltaTime();
 		float time = Engine::Instance().GetTime().GetTime();
 
-		glm::vec3 direction{ 0, 0, 0 };
-
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_A)) direction.x = -1;
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_D)) direction.x = +1;
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_E)) direction.y = -1;
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_Q)) direction.y = +1;
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_W)) direction.z = -1;
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_S)) direction.z = +1;
-
-		vertexUniform.cameraPosition += direction * 4.0f * dt;
+		// SCENE
+		scene.Update(dt);
 
 		lightUniform.lights[0].position = glm::eulerAngleY(time) * glm::vec4{ 0, 0, 10, 1 };
-		lightUniform.lights[1].position = glm::eulerAngleX(time * 0.5f) * glm::vec4{ 0, 0, 10, 1 };
-
-		/*if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_1)) {
-			light1.type = LightType::Directional;
-			light1.position = glm::vec3{ 0, 6, 0 };
-		}
-
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_2)) {
-			light1.type = LightType::Point;
-			light1.position = glm::vec3{ 5, 5, 5 };
-		}
-
-		if (Engine::Instance().GetInput().GetKeyDown(SDL_SCANCODE_3)) {
-			light1.type = LightType::Spot;
-			light1.position = glm::vec3{ 0, 6, 0 };
-			light1.innerCutoff = glm::cos(glm::radians(20.0f));
-			light1.outerCutoff = glm::cos(glm::radians(20.0f));
-		}*/
+		//lightUniform.lights[1].position = glm::eulerAngleX(time * 0.5f) * glm::vec4{ 0, 0, 10, 1 };
 
 
 
@@ -211,15 +202,19 @@ int main() {
 		// RENDER
 
 		// View Matrix
-		auto view = glm::lookAtRH(vertexUniform.cameraPosition, vertexUniform.cameraPosition + glm::vec3{ 0, 0, -1 }, glm::vec3{ 0, 1, 0 });
+		//auto view = glm::lookAtRH(vertexUniform.cameraPosition, vertexUniform.cameraPosition + glm::vec3{ 0, 0, -1 }, glm::vec3{ 0, 1, 0 });
 
 		// Projection Matrix
-		float aspectRatio = Engine::Instance().GetRenderer().GetWidth() / (float)Engine::Instance().GetRenderer().GetHeight();
-		auto projection = glm::perspective(glm::radians(70.0f), aspectRatio, 0.01f, 200.0f);
+		//float aspectRatio = Engine::Instance().GetRenderer().GetWidth() / (float)Engine::Instance().GetRenderer().GetHeight();
+		//auto projection = glm::perspective(glm::radians(70.0f), aspectRatio, 0.01f, 200.0f);
+		
+		auto camera = scene.GetActorByName("Camera");
+		auto cameraComponent = camera->GetComponent<CameraComponent>();
+		vertexUniform.cameraPosition = camera->GetTransform().position;
 
 		//MVP
 		vertexUniform.model = transform.GetMatrix();
-		vertexUniform.mvp = projection * view * vertexUniform.model;
+		vertexUniform.mvp = cameraComponent->GetProjection() * cameraComponent->GetView() * vertexUniform.model;
 
 
 
