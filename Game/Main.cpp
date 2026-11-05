@@ -17,7 +17,6 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
 
-#define CHECK_UNIFORM_BOUNDARY(T) static_assert((sizeof(T) % 16) == 0);
 #define MAX_LIGHTS 8
 
 using namespace nu;
@@ -112,7 +111,7 @@ int main() {
 		.direction { 0, -1, 0 },
 		.range { 100 },
 		.color { 1, 1, 1 },
-		.intensity { 0.3 },
+		.intensity { 0.3f },
 		.ambient { 0.25f },
 		.innerCutoff { 0.3f },
 		.outerCutoff { 1.6f }
@@ -221,13 +220,13 @@ int main() {
 		Engine::Instance().GetRenderer().BeginFrame();
 
 		Engine::Instance().GetRenderer().SetPipeline(*pipeline);
-		Engine::Instance().GetRenderer().SetVertexUniform(0, &vertexUniform, sizeof(vertexUniform));
-		Engine::Instance().GetRenderer().SetVertexUniform(1, &lightUniform, sizeof(lightUniform));
-		Engine::Instance().GetRenderer().SetVertexUniform(2, &materialUniform, sizeof(materialUniform));
+		Engine::Instance().GetRenderer().SetVertexUniform(UniformSlot::Object, &vertexUniform, sizeof(vertexUniform));
+		Engine::Instance().GetRenderer().SetVertexUniform(UniformSlot::Light, &lightUniform, sizeof(lightUniform));
+		Engine::Instance().GetRenderer().SetVertexUniform(UniformSlot::Material, &materialUniform, sizeof(materialUniform));
 
-		Engine::Instance().GetRenderer().SetFragmentUniform(0, &vertexUniform, sizeof(vertexUniform));
-		Engine::Instance().GetRenderer().SetFragmentUniform(1, &lightUniform, sizeof(lightUniform));
-		Engine::Instance().GetRenderer().SetFragmentUniform(2, &materialUniform, sizeof(materialUniform));
+		Engine::Instance().GetRenderer().SetFragmentUniform(UniformSlot::Object, &vertexUniform, sizeof(vertexUniform));
+		Engine::Instance().GetRenderer().SetFragmentUniform(UniformSlot::Light, &lightUniform, sizeof(lightUniform));
+		Engine::Instance().GetRenderer().SetFragmentUniform(UniformSlot::Material, &materialUniform, sizeof(materialUniform));
 
 		Engine::Instance().GetRenderer().SetFragmentTexture(0, *texture);
 

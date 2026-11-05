@@ -23,14 +23,21 @@ struct Light
     float range;
     float3 color;
     float intensity;
-    float3 ambient;
     float innerCutoff;
     float outerCutoff;
-    float3 padding0;
+    float2 padding0;
     
 };
 
-float calculateAttenuation(float distance, float range)
+struct Lights
+{
+    Light lights[MAX_LIGHTS];
+    uint count;
+    float3 ambient;
+};
+
+float calculateAttenuation(
+float distance, float range)
 {
     return pow(1 - saturate(distance / range), 2);
 }
@@ -92,7 +99,7 @@ float3 calculateSpecular(float3 radiance, float3 N, float3 L, float3 V, Material
 void calculateLighting(Light light, Material material, float3 position, float3 N, float3 V,
                        out float3 diffuse, out float3 specular)
 {
-    float attenuation = calculateAttenuation(length(light.position-position), light.range);
+    float attenuation = calculateAttenuation(length(light.position - position), light.range);
     float3 L = getLightVector(light, position, attenuation);
 
     // light arriving at the surface

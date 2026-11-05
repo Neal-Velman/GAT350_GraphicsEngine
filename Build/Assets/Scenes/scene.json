@@ -7,7 +7,7 @@
       "prototype": false,
       "transform": {
         "position": [ 0, 0, 10 ],
-        "rotation": [0, 180, 0],
+        "rotation": [0, 0, 0],
         "scale": [1, 1, 1]
       },
       "active": true,
@@ -20,7 +20,8 @@
         },
         {
           "type": "CameraControllerComponent",
-          "speed": 4.0
+          "speed": 4.0,
+          "sensitivity": 0.2
         }
       ]
     }
