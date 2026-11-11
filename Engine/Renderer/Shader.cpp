@@ -82,14 +82,11 @@ namespace nu
 		}
 
 		json::document_t metadata;
-
 		if (!json::Load(filename + ".json", metadata)) {
 			std::cerr << "Could not load shader metadata: " << filename << ".json" << std::endl;
 			return false;
-
 		}
 		unsigned int samplers = 0;
-
 		JSON_READ(metadata, samplers);
 
 		// fill out the shader settings

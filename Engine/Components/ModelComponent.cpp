@@ -11,6 +11,12 @@ namespace nu {
 	FACTORY_REGISTER(ModelComponent)
 
 	void ModelComponent::Draw(const Renderer& renderer) {
+
+		if (!m_model) {
+			std::cerr << "Couldn't draw model for the actor: " << m_owner << ".\n";
+			return;
+		}
+
 		ObjectUniform objectUniform{
 			.model = m_owner->GetTransform().GetMatrix(),
 			.normalMatrix = m_owner->GetTransform().GetMatrix(),

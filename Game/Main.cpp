@@ -48,7 +48,6 @@ int main() {
 		// ENGINE
 		Engine::Instance().Update();
 		float dt = Engine::Instance().GetTime().GetDeltaTime();
-		float time = Engine::Instance().GetTime().GetTime();
 
 		// SCENE
 		scene.Update(dt);

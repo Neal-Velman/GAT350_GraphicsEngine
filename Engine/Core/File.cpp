@@ -176,4 +176,9 @@ namespace nu
 
 		return true;
 	}
+
+	std::string GetParentDirectory(const std::string& path)
+	{
+		return std::filesystem::path(path).parent_path().string();
+	}
 }
