@@ -17,15 +17,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
 
-#define MAX_LIGHTS 8
-
 using namespace nu;
-
-enum class LightType : uint32_t {
-	Directional,
-	Point,
-	Spot
-};
 
 int main() {
 	SetWorkingDirectory("Assets");
@@ -37,131 +29,7 @@ int main() {
 
 	scene.Load("scenes/scene.json");
 
-	auto model = Resources().Get<Model>("models/ogre.obj", Engine::Instance().GetRenderer());
-	auto texture = Resources().Get<Texture>("textures/ogre_diffuse.bmp", Engine::Instance().GetRenderer());
-
-	auto vshader = Resources().Get<nu::Shader>("shaders/phong.vert", Engine::Instance().GetRenderer(), 3);
-	auto fshader = Resources().Get<nu::Shader>("shaders/phong.frag", Engine::Instance().GetRenderer(), 3, 1);
-
-	auto pipeline = std::make_shared<Pipeline>();
-
-	pipeline->AddVertexBuffer(sizeof(Model::Vertex));
-	pipeline->AddVertexAttribute(0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, position));
-	pipeline->AddVertexAttribute(1, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, offsetof(Model::Vertex, texcoord));
-	pipeline->AddVertexAttribute(2, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, normal));
-	pipeline->AddVertexAttribute(3, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, offsetof(Model::Vertex, tangent));
-
-	pipeline->Create(*vshader.get(), *fshader.get(),
-		Engine::Instance().GetRenderer().GetGPUDevice(),
-		Engine::Instance().GetRenderer().GetWindow());
-
-
-	//Uniforms
-	struct VertexUniform {
-		glm::mat4 mvp;
-		glm::mat4 model;
-		glm::vec3 cameraPosition;
-		float padding0;
-	};
-
-	CHECK_UNIFORM_BOUNDARY(VertexUniform);
-
-	VertexUniform vertexUniform;
-
-	struct Light {
-		glm::vec3 position;
-		LightType type;
-		glm::vec3 direction;
-		float range;
-		glm::vec3 color;
-		float intensity;
-		glm::vec3 ambient;
-		float innerCutoff;
-		float outerCutoff;
-		glm::vec3 padding;
-	};
-
-	Light light1 {
-		.position { 10, 10, 10 },
-		.type { LightType::Point },
-		.direction { 0, -1, 0 },
-		.range { 100 },
-		.color { 0, 1, 1 },
-		.intensity { 2.5 },
-		.ambient { 0.25f },
-		.innerCutoff { 0.3f },
-		.outerCutoff { 1.6f }
-	};
-
-	Light light2 {
-		.position { 0, 5, 0 },
-		.type { LightType::Spot },
-		.direction { 0, -1, 0 },
-		.range { 100 },
-		.color { 1, 0, 0 },
-		.intensity { 5.5 },
-		.ambient { 0.25f },
-		.innerCutoff { 0.3f },
-		.outerCutoff { 1.0f }
-	};
-
-	Light light3{
-		.position { 0, 10, 10 },
-		.type { LightType::Directional },
-		.direction { 0, -1, 0 },
-		.range { 100 },
-		.color { 1, 1, 1 },
-		.intensity { 0.3f },
-		.ambient { 0.25f },
-		.innerCutoff { 0.3f },
-		.outerCutoff { 1.6f }
-	};
-
-
-	struct LightUniform {
-		Light lights[MAX_LIGHTS];
-		uint32_t numLights;
-		glm::vec3 ambient;
-	};
-
-	LightUniform lightUniform;
-
-	lightUniform.lights[0] = light1;
-	lightUniform.lights[1] = light2;
-	lightUniform.lights[2] = light3;
-	lightUniform.numLights = 3;
-	lightUniform.ambient = glm::vec3{ 0.25f };
-
-
-	CHECK_UNIFORM_BOUNDARY(LightUniform);
-	CHECK_UNIFORM_BOUNDARY(light1);
-	CHECK_UNIFORM_BOUNDARY(light2);
-	CHECK_UNIFORM_BOUNDARY(light3);
-
-
-
-	struct MaterialUniform {
-		glm::vec4 color;
-		glm::vec2 tiling;
-		glm::vec2 offset;
-		float shininess;
-		glm::vec3 padding0;
-	};
-	CHECK_UNIFORM_BOUNDARY(MaterialUniform);
-
-	MaterialUniform materialUniform {
-		.color {1, 1, 1, 1},
-		.tiling { 1.0f, 1.0f },
-		.offset { 0.0f, 0.0f },
-		.shininess { 10.0f }
-	};
-
-
-	Transform transform;
-	//transform.rotation.x = 90.0f;
-	//transform.rotation.y = 180.0f;
-	transform.scale = glm::vec3{ 4.0f };
-
+	auto& renderer = Engine::Instance().GetRenderer();
 
 	// MAIN LOOP
 	bool quit = false;
@@ -185,54 +53,12 @@ int main() {
 		// SCENE
 		scene.Update(dt);
 
-		lightUniform.lights[0].position = glm::eulerAngleY(time) * glm::vec4{ 0, 0, 10, 1 };
-		//lightUniform.lights[1].position = glm::eulerAngleX(time * 0.5f) * glm::vec4{ 0, 0, 10, 1 };
-
-
-
-		//materialUniform.offset.x = time * 0.25;
-		//materialUniform.tiling = glm::vec2{ 20.0f };
-
-		// TRANSFORM
-
-		//transform.rotation.y = time * 90;
-		//transform.rotation.x = -90;
-
 		// RENDER
+		renderer.BeginFrame();
 
-		// View Matrix
-		//auto view = glm::lookAtRH(vertexUniform.cameraPosition, vertexUniform.cameraPosition + glm::vec3{ 0, 0, -1 }, glm::vec3{ 0, 1, 0 });
+		scene.Draw(renderer);
 
-		// Projection Matrix
-		//float aspectRatio = Engine::Instance().GetRenderer().GetWidth() / (float)Engine::Instance().GetRenderer().GetHeight();
-		//auto projection = glm::perspective(glm::radians(70.0f), aspectRatio, 0.01f, 200.0f);
-		
-		auto camera = scene.GetActorByName("Camera");
-		auto cameraComponent = camera->GetComponent<CameraComponent>();
-		vertexUniform.cameraPosition = camera->GetTransform().position;
-
-		//MVP
-		vertexUniform.model = transform.GetMatrix();
-		vertexUniform.mvp = cameraComponent->GetProjection() * cameraComponent->GetView() * vertexUniform.model;
-
-
-
-		Engine::Instance().GetRenderer().BeginFrame();
-
-		Engine::Instance().GetRenderer().SetPipeline(*pipeline);
-		Engine::Instance().GetRenderer().SetVertexUniform(UniformSlot::Object, &vertexUniform, sizeof(vertexUniform));
-		Engine::Instance().GetRenderer().SetVertexUniform(UniformSlot::Light, &lightUniform, sizeof(lightUniform));
-		Engine::Instance().GetRenderer().SetVertexUniform(UniformSlot::Material, &materialUniform, sizeof(materialUniform));
-
-		Engine::Instance().GetRenderer().SetFragmentUniform(UniformSlot::Object, &vertexUniform, sizeof(vertexUniform));
-		Engine::Instance().GetRenderer().SetFragmentUniform(UniformSlot::Light, &lightUniform, sizeof(lightUniform));
-		Engine::Instance().GetRenderer().SetFragmentUniform(UniformSlot::Material, &materialUniform, sizeof(materialUniform));
-
-		Engine::Instance().GetRenderer().SetFragmentTexture(0, *texture);
-
-		model->Draw(Engine::Instance().GetRenderer());
-
-		Engine::Instance().GetRenderer().EndFrame();
+		renderer.EndFrame();
 	}
 
 	// SHUTDOWN
