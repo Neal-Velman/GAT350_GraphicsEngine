@@ -28,5 +28,8 @@
     <None Include="..\Build\Assets\Materials\spot.instance.json">
       <Filter>Assets\Materials</Filter>
     </None>
+    <None Include="..\Build\Assets\Materials\plane.instance.json">
+      <Filter>Assets\Materials</Filter>
+    </None>
   </ItemGroup>
 </Project>
