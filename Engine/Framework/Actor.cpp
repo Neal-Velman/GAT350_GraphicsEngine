@@ -25,94 +25,126 @@ namespace nu
         }
     }
 
-    void Actor::Start()
+void Actor::Start()
+{
+    for (auto& component : m_components)
     {
-        for (auto& component : m_components)
-        {
-            component->Start();
-        }
+        component->Start();
+    }
+}
+
+void Actor::OnDestroy()
+{
+    for (auto& component : m_components)
+    {
+        component->OnDestroy();
+    }
+}
+
+void Actor::Update(float dt)
+{
+    // lifespan
+    if (m_lifespan > 0.0f)
+    {
+        m_lifespan -= dt;
+        m_destroyed = (m_lifespan <= 0.0f);
     }
 
-    void Actor::OnDestroy()
+    for (auto& component : m_components)
     {
-        for (auto& component : m_components)
+        if (component->IsActive())
+            component->Update(dt);
+    }
+}
+
+void Actor::Draw(const Renderer& renderer) const
+{
+    for (auto& component : m_components)
+    {
+        // check if component is a renderer component
+        auto rendererComponent = dynamic_cast<RendererComponent*>(component.get());
+        if (rendererComponent)
         {
-            component->OnDestroy();
+            // draw renderer component
+            if (rendererComponent->IsActive())
+                rendererComponent->Draw(renderer);
         }
     }
+}
 
-    void Actor::Update(float dt)
+float Actor::GetRadius() const
+{
+    return 0.0f;
+}
+
+void Actor::Read(const json::value_t& value)
+{
+    Object::Read(value);
+
+    if (JSON_HAS_NAME(value, "transform"))
     {
-        // lifespan
-        if (m_lifespan > 0.0f)
-        {
-            m_lifespan -= dt;
-            m_destroyed = (m_lifespan <= 0.0f);
-        }
-
-        for (auto& component : m_components)
-        {
-            if (component->IsActive())
-                component->Update(dt);
-        }
+        m_transform.Read(JSON_GET_NAME(value, "transform"));
     }
 
-    void Actor::Draw(const Renderer& renderer) const
+    JSON_READ_NAME(value, "tag", m_tag);
+    JSON_READ_NAME(value, "lifespan", m_lifespan);
+    JSON_READ_NAME(value, "persistent", m_persistent);
+
+    // read actor components
+    if (JSON_HAS_NAME(value, "components"))
     {
-        for (auto& component : m_components)
+        // iterate through actor components
+        for (auto& componentValue : JSON_GET_NAME(value, "components").GetArray())
         {
-            // check if component is a renderer component
-            auto rendererComponent = dynamic_cast<RendererComponent*>(component.get());
-            if (rendererComponent)
+            // get component type
+            std::string typeName;
+            JSON_READ_NAME(componentValue, "type", typeName);
+
+            std::cout << "Loading component type: " << typeName << std::endl;
+
+            // create component of type
+            auto component = Factory::Instance().Create<Component>(typeName);
+
+            if (component)
             {
-                // draw renderer component
-                if (rendererComponent->IsActive())
-                    rendererComponent->Draw(renderer);
+                component->Read(componentValue);
+                AddComponent(std::move(component));
             }
         }
     }
+}
 
-    float Actor::GetRadius() const
-    {
-        return 0.0f;
+void Actor::UpdateGui() {
+
+    ImGui::Checkbox("##Active", &m_active);
+    ImGui::SameLine();
+
+    Object::UpdateGui();
+
+    ImGui::Text("Tag: %s", m_tag.c_str());
+    ImGui::Separator();
+
+    if (ImGui::CollapsingHeader("Transform"), ImGuiTreeNodeFlags_DefaultOpen) {
+        m_transform.UpdateGui();
     }
 
-    void Actor::Read(const json::value_t& value)
+    // components information
+    for (auto& component : m_components)
     {
-        Object::Read(value);
+        ImGui::PushID(component.get());
+        ImGui::Separator();
 
-        if (JSON_HAS_NAME(value, "transform"))
+        bool active = component->IsActive();
+        if (ImGui::Checkbox("##active", &active)) component->SetActive(active);
+        ImGui::SameLine();
+
+        if (ImGui::CollapsingHeader(component->GetClassName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
-            m_transform.Read(JSON_GET_NAME(value, "transform"));
+            component->UpdateGui();
         }
-
-        JSON_READ_NAME(value, "tag", m_tag);
-        JSON_READ_NAME(value, "lifespan", m_lifespan);
-        JSON_READ_NAME(value, "persistent", m_persistent);
-
-        // read actor components
-        if (JSON_HAS_NAME(value, "components"))
-        {
-            // iterate through actor components
-            for (auto& componentValue : JSON_GET_NAME(value, "components").GetArray())
-            {
-                // get component type
-                std::string typeName;
-                JSON_READ_NAME(componentValue, "type", typeName);
-
-                std::cout << "Loading component type: " << typeName << std::endl;
-
-                // create component of type
-                auto component = Factory::Instance().Create<Component>(typeName);
-
-                if (component)
-                {
-                    component->Read(componentValue);
-                    AddComponent(std::move(component));
-                }
-            }
-        }
+        ImGui::PopID();
     }
+}
 
 
     void Actor::AddComponent(std::unique_ptr<Component> component)
