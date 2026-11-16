@@ -18,6 +18,8 @@ namespace nu
 			requires std::derived_from<T, Resource>
 		res_t<T> GetWithID(const std::string& id, const std::string& name, Args&& ... args);
 
+		void Clear() { m_resources.clear(); }
+
 	private:
 		friend class Singleton<ResourceManager>;
 		ResourceManager() = default;
@@ -32,13 +34,11 @@ namespace nu
 	{
 		auto iter = m_resources.find(name);
 		// check if resource exists
-		if (iter != m_resources.end())
-		{
+		if (iter != m_resources.end()) {
 			auto base = iter->second;
 			auto resource = std::dynamic_pointer_cast<T>(base);
 
-			if (resource == nullptr)
-			{
+			if (resource == nullptr) {
 				std::cerr << "Resource type mismatch: " << name << std::endl;
 				return res_t<T>();
 			}
@@ -50,8 +50,7 @@ namespace nu
 
 		// resource doesn't exist, create and load
 		res_t<T> resource = std::make_shared<T>();
-		if (!resource->Load(name, std::forward<Args>(args)...))
-		{
+		if (!resource->Load(name, std::forward<Args>(args)...)) {
 			std::cerr << "Could not load resource: " << name << std::endl;
 			return res_t<T>();
 		}
@@ -68,13 +67,11 @@ namespace nu
 	{
 		auto iter = m_resources.find(id);
 		// check if resource exists
-		if (iter != m_resources.end())
-		{
+		if (iter != m_resources.end()) {
 			auto base = iter->second;
 			auto resource = std::dynamic_pointer_cast<T>(base);
 
-			if (resource == nullptr)
-			{
+			if (resource == nullptr) {
 				std::cerr << "Resource type mismatch: " << name << std::endl;
 				return res_t<T>();
 			}

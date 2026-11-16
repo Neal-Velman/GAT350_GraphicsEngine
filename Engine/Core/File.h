@@ -21,4 +21,6 @@ namespace nu
 
     bool ReadTextFile(const std::string& path, std::string& data);
     bool WriteTextFile(const std::string& path, const std::string& data, bool append = false);
+
+    std::string GetParentDirectory(const std::string& path);
 }

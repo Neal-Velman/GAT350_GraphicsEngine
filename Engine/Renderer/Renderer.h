@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Math/Vector2.h"
+#include "Uniforms.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
-namespace nu
-{
-	class Renderer
-	{
+namespace nu {
+	class Renderer {
 	public:
 		bool Initialize(const char* name, int width, int height);
 		void Shutdown();
@@ -17,6 +15,7 @@ namespace nu
 
 		bool BeginFrame();
 		bool EndFrame();
+		void EndRenderPass();
 
 		void SetColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255) const;
 		void SetColor(float r, float g, float b, float a = 1.0f) const;
@@ -30,23 +29,26 @@ namespace nu
 		int GetWidth() const { return m_width; }
 		int GetHeight() const { return m_height; }
 
-		void SetCamera(const Vector2& camera) { m_camera = camera; }
-		void EnableCamera(bool enable = true) { m_cameraEnabled = enable; }
+		
 
 		// SDL_GPU Stuff
 
 		SDL_GPUDevice* GetGPUDevice() const { return m_gpuDevice; }
 		SDL_Window* GetWindow() const { return m_window; }
+		SDL_GPUCommandBuffer* GetGPUCommandBuffer() const { return m_commandBuffer; }
+		SDL_GPUTexture* GetGPUSwapchainTexture() const { return m_swapchainTexture; }
 
-		void SetPipeline(const class Pipeline& pipeline);
-		void SetVertexBuffer(const class VertexBuffer& vertexBuffer);
-		void SetIndexBuffer(const class IndexBuffer& indexBuffer);
+		void SetPipeline(const class Pipeline& pipeline) const;
+		void SetVertexBuffer(const class VertexBuffer& vertexBuffer) const;
+		void SetIndexBuffer(const class IndexBuffer& indexBuffer) const;
 		void Draw(uint32_t vertexCount);
-		void DrawIndex(const class IndexBuffer& indexBuffer);
+		void DrawIndex(const class IndexBuffer& indexBuffer) const;
 
-		void SetVertexUniform(uint32_t slot, const void* data, uint32_t size);
-		void SetFragmentUniform(uint32_t slot, const void* data, uint32_t size);
+		void SetVertexUniform(UniformSlot slot, const void* data, uint32_t size) const;
+		void SetFragmentUniform(UniformSlot slot, const void* data, uint32_t size) const;
+
 		void SetFragmentTexture(uint32_t slot, const class Texture& texture);
+		void SetMaterial(const class MaterialInstance& materialInstance) const;
 
 		void CreateDepthBuffer();
 
@@ -64,9 +66,7 @@ namespace nu
 		SDL_GPUCommandBuffer* m_commandBuffer = nullptr;
 		SDL_GPURenderPass* m_renderPass = nullptr;
 		SDL_GPUTexture* m_depthTexture = nullptr;
-
-		bool m_cameraEnabled = true;
-		Vector2 m_camera;
+		SDL_GPUTexture* m_swapchainTexture = nullptr;
 
 		int m_width = 0;
 		int m_height = 0;
