@@ -77,3 +77,8 @@ int main() {
 
 	return 0;
 }
+
+// Fence Model: Wooden fence by Frank Lynam [CC-BY] via Poly Pizza
+// Barn Model: Big Barn by Quaternius
+// Pond Model: Pond by Jarlan Perez [CC-BY] via Poly Pizza
+// Tractor Model: Tractor by Poly by Google [CC-BY] via Poly Pizza

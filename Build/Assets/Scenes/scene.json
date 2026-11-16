@@ -25,20 +25,22 @@
       ]
     },
     {
-      "name": "Light1",
+      "name": "Light2",
       "type": "Actor",
       "tag": "Light",
       "active": false,
       "transform": {
-        "direction": [ 0, -5, 0 ],
-        "rotation": [ 0, 90, 0 ]
+        "position": [ 0, 5, 0 ],
+        "rotation": [ 90, 0, 0 ]
       },
       "components": [
         {
           "type": "LightComponent",
-          "light_type": "directional",
+          "light_type": "point",
           "color": [ 1.0, 1.0, 1.0 ],
-          "intensity": 1.5
+          "intensity": 1.5,
+          "range": 50
+
         }
       ]
     },
@@ -63,8 +65,10 @@
       "name": "Spot",
       "type": "Actor",
       "tag": "Spot",
+      "rotation": [ 90, 90, 90 ],
       "transform": {
-        "position": [ 2, -1, 0 ],
+        "rotation": [ 0, 180, 0 ],
+        "position": [ 6, 0.2, 0 ],
         "scale": [ 0.4, 0.4, 0.4 ]
       },
       "components": [
@@ -76,30 +80,17 @@
       ]
     },
     {
-      "name": "Helmet",
+      "name": "Fence",
       "type": "Actor",
       "transform": {
-        "position": [ 0, 0, 0 ],
-        "scale": [ 0.4, 0.4, 0.4 ]
+        "position": [ 7, 0, 0 ],
+        "rotation": [ 0, 0, 0 ],
+        "scale": [ 1.0, 1.0, 1.0 ]
       },
       "components": [
         {
           "type": "ModelComponent",
-          "model": "models/flight-helmet/FlightHelmet.gltf"
-        }
-      ]
-    },
-    {
-      "name": "Cubone",
-      "type": "Actor",
-      "transform": {
-        "position": [ -2, 0, 0 ],
-        "scale": [ 0.4, 0.4, 0.4 ]
-      },
-      "components": [
-        {
-          "type": "ModelComponent",
-          "model": "models/cubone.glb"
+          "model": "models/fence.glb"
         }
       ]
     },
@@ -107,7 +98,7 @@
       "name": "Plane",
       "type": "Actor",
       "transform": {
-        "position": [ 0, -5, 0 ],
+        "position": [ 0, -1.5, 0 ],
         "rotation": [ 0, 0, 0 ],
         "scale": [ 10.0, 10.0, 10.0 ]
       },
@@ -116,6 +107,66 @@
           "type": "ModelComponent",
           "model": "models/ThinCube.obj",
           "materials": [ "materials/plane.instance.json" ]
+        }
+      ]
+    },
+    {
+      "name": "Barn",
+      "type": "Actor",
+      "transform": {
+        "position": [ 0, 0, 0 ],
+        "rotation": [ 0, 0, 0 ],
+        "scale": [ 0.4, 0.4, 0.4 ]
+      },
+      "components": [
+        {
+          "type": "ModelComponent",
+          "model": "models/barn.glb"
+        }
+      ]
+    },
+    {
+      "name": "Pond",
+      "type": "Actor",
+      "transform": {
+        "position": [ -6, 0.25, 0 ],
+        "rotation": [ 0, 0, 0 ],
+        "scale": [ 5.0, 5.0, 5.0 ]
+      },
+      "components": [
+        {
+          "type": "ModelComponent",
+          "model": "models/pond.glb"
+        }
+      ]
+    },
+    {
+      "name": "Crops",
+      "type": "Actor",
+      "transform": {
+        "position": [ 0, 0, 7 ],
+        "rotation": [ -90, 180, 0 ],
+        "scale": [ 250.0, 250.0, 250.0 ]
+      },
+      "components": [
+        {
+          "type": "ModelComponent",
+          "model": "models/crops.glb"
+        }
+      ]
+    },
+    {
+      "name": "Tractor",
+      "type": "Actor",
+      "transform": {
+        "position": [ -6, 0.25, 0 ],
+        "rotation": [ 0, 0, 0 ],
+        "scale": [ 5.0, 5.0, 5.0 ]
+      },
+      "components": [
+        {
+          "type": "ModelComponent",
+          "model": "models/tractor.glb"
         }
       ]
     }
