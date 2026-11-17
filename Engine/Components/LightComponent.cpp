@@ -6,7 +6,7 @@
 namespace nu {
 	FACTORY_REGISTER(LightComponent)
 
-	void LightComponent::Draw(const Renderer& renderer) {
+		void LightComponent::Draw(const Renderer& renderer) {
 
 	}
 
@@ -41,5 +41,16 @@ namespace nu {
 		};
 
 		return lightData;
+	}
+
+	void LightComponent::UpdateGui() {
+		const char* types[] = { "Directional", "Point", "Spot" };
+		ImGui::Combo("Type", (int*)(&m_type), types, 3);
+		ImGui::ColorEdit3("Light Color", glm::value_ptr(m_color));
+		ImGui::SliderFloat("Intensity", &m_intensity, 0.1f, 20.0f);
+
+		if (m_type != LightType::Directional) {
+			ImGui::SliderFloat("Range", &m_range, 0.1f, 100.0f);
+		}
 	}
 }

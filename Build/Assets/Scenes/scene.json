@@ -106,7 +106,7 @@
         {
           "type": "ModelComponent",
           "model": "models/ThinCube.obj",
-          "materials": [ "materials/plane.instance.json" ]
+          "materials": [ "materials/ground.instance.json" ]
         }
       ]
     },
@@ -152,6 +152,23 @@
         {
           "type": "ModelComponent",
           "model": "models/crops.glb"
+        }
+      ]
+    },
+    {
+      "name": "Cube",
+      "type": "Actor",
+      "tag": "Cube",
+      "transform": {
+        "position": [ 0, 5, -5 ],
+        "rotation": [ 0, 0, 0 ],
+        "scale": [ 2.0, 2.0, 2.0 ]
+      },
+      "components": [
+        {
+          "type": "ModelComponent",
+          "model": "models/cube.obj",
+          "materials": [ "materials/ground.instance.json" ]
         }
       ]
     }
