@@ -156,19 +156,19 @@
       ]
     },
     {
-      "name": "Cube",
+      "name": "ThinCube",
       "type": "Actor",
-      "tag": "Cube",
+      "tag": "ThinCube",
       "transform": {
-        "position": [ 0, 5, -5 ],
+        "position": [ 0, 10, 0 ],
         "rotation": [ 0, 0, 0 ],
         "scale": [ 2.0, 2.0, 2.0 ]
       },
       "components": [
         {
           "type": "ModelComponent",
-          "model": "models/cube.obj",
-          "materials": [ "materials/ground.instance.json" ]
+          "model": "models/ThinCube.obj",
+          "materials": [ "materials/lava.instance.json" ]
         }
       ]
     }

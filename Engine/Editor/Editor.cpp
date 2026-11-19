@@ -3,12 +3,12 @@
 #include "Renderer/Renderer.h"
 #include "Framework/Scene.h"
 #include "Framework/Object.h"
+#include "Resources/ResourceManager.h"
 
 
 namespace nu
 {
-	bool Editor::Initialize(Renderer& renderer)
-	{
+	bool Editor::Initialize(Renderer& renderer) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
@@ -18,8 +18,7 @@ namespace nu
 		ImGui::StyleColorsDark();
 
 		// platform backend: input, window size, cursor
-		if (!ImGui_ImplSDL3_InitForSDLGPU(renderer.GetWindow()))
-		{
+		if (!ImGui_ImplSDL3_InitForSDLGPU(renderer.GetWindow())) {
 			std::cerr << "Could not initialize ImGui SDL3 backend" << std::endl;
 			return false;
 		}
@@ -126,6 +125,15 @@ namespace nu
 		ImGui::End();
 	}
 	void Editor::UpdateAssets() {
-
+		ImGui::Begin("Assets");
+		for (auto& resource : Resources().GetAll()) {
+			ImGui::PushID(resource.second.get());
+			//ImGui::Text("%s", resource.second->GetName().c_str());
+			if (ImGui::Selectable(resource.second->GetName().c_str(), m_selected == resource.second.get())) {
+				m_selected = resource.second.get();
+			}
+			ImGui::PopID();
+		}
+		ImGui::End();
 	}
 }
