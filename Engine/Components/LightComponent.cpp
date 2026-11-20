@@ -52,5 +52,10 @@ namespace nu {
 		if (m_type != LightType::Directional) {
 			ImGui::SliderFloat("Range", &m_range, 0.1f, 100.0f);
 		}
+
+		if (m_type == LightType::Spot) {
+			ImGui::SliderFloat("Inner Angle Cutoff", &m_innerAngle, 0.1f, 180.0f);
+			ImGui::SliderFloat("Outer Angle Cutoff", &m_outerAngle, 0.1f, 180.0f);
+		}
 	}
 }

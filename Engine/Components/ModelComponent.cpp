@@ -62,7 +62,7 @@ namespace nu {
 		 
 		ImGui::TextColored({ 0,1,0,1 }, "Materials");
 		for (size_t i = 0; i < m_materials.size(); i++) {
-			ImGui::Text("Material [%d] - %s", i, m_materials[i]->GetName().c_str());
+			ImGui::Text("Material [%d] - %s", i + 1, m_materials[i]->GetName().c_str());
 		}
 		
 	}
