@@ -18,9 +18,12 @@ namespace nu
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(filename,
 			aiProcess_Triangulate |
+			aiProcess_JoinIdenticalVertices |
 			aiProcess_GenSmoothNormals |
 			aiProcess_FlipUVs |
-			aiProcess_CalcTangentSpace);
+			aiProcess_CalcTangentSpace |
+			aiProcess_RemoveRedundantMaterials |
+			aiProcess_OptimizeMeshes);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -55,6 +58,7 @@ namespace nu
 			renderer.DrawIndex(*mesh.indexBuffer);
 		}
 	}
+
 
 	void Model::ProcessNode(aiNode* node, const aiScene* scene, const Renderer& renderer)
 	{
@@ -99,6 +103,7 @@ namespace nu
 				: glm::vec2{ 0, 0 };
 
 			// todo: set vertex.normal from mesh->mNormals[i] (x, y, z)
+	
 			// normals are optional, use (0, 0, 0) if mesh->mNormals is null (see texcoord above)
 			vertex.normal = (mesh->mNormals) 
 				? glm::vec3{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }
@@ -206,12 +211,32 @@ namespace nu
 			aiString name;
 			source->Get(AI_MATKEY_NAME, name);
 
+			instance.SetName(name.C_Str());
+
 			const MaterialData& data = instance.GetData();
 			std::cout << "  [" << i << "] " << name.C_Str()
 				<< " | color: " << data.baseColor.r << ", " << data.baseColor.g << ", " << data.baseColor.b << ", " << data.baseColor.a
 				<< " | shininess: " << data.shininess
 				<< " | texture: " << (path.length > 0 ? path.C_Str() : "none")
 				<< std::endl;
+		}
+	}
+
+	void Model::UpdateGui() {
+		Resource::UpdateGui();
+
+		ImGui::TextColored({ 0, 1, 0, 1 }, "Meshes");
+		ImGui::Separator();
+		for (size_t i = 0; i < m_meshes.size(); i++)
+		{
+			ImGui::Text("Mesh [%d]: Material [%d]", i + 1, m_meshes[i].materialIndex + 1);
+		}
+
+		ImGui::TextColored({ 0, 1, 0, 1 }, "Materials");
+		ImGui::Separator();
+		for (size_t i = 0; i < m_materials.size(); i++)
+		{
+			ImGui::Text("Material [%d]: %s", i + 1, m_materials[i].GetName().c_str());
 		}
 	}
 }
