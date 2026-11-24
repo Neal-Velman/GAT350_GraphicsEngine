@@ -44,5 +44,7 @@ namespace nu {
 	void CameraControllerComponent::UpdateGui() {
 		ImGui::SliderFloat("Speed", &m_speed, 0.1f, 250.0f);
 		ImGui::SliderFloat("Sensitivity", &m_sensitivity, 0.01f, 5.0f);
+		ImGui::SliderFloat("Yaw", &m_yaw, 0.0f, 360.0f);
+		ImGui::SliderFloat("Pitch", &m_pitch, 0.0f, 360.0f);
 	}
 }

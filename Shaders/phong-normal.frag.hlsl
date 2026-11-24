@@ -38,6 +38,7 @@ struct Input
     float2 texcoord : TEXCOORD0;
     float3 worldPosition : TEXCOORD1;
     float3 normal : TEXCOORD2;
+    float3 tangent : TEXCOORD3;
 };
 
 struct Output
@@ -50,17 +51,26 @@ Output main(Input input)
     Output output;
     
     float specularMask = specular_texture.Sample(specular_sampler, input.texcoord).r;
-    
     float3 emissive = emissive_texture.Sample(emissive_sampler, input.texcoord).rgb * material.emissiveColor;
+    
     float4 albedo = base_texture.Sample(base_sampler, input.texcoord) * material.baseColor;
     float3 diffuse = lights.ambient;
     float3 specular = 0;
     
-    float3 N = normalize(input.normal);
+    float3 normal = normal_texture.Sample(normal_sampler, input.texcoord).rgb * 2.0 - 1.0;
+    normal.xy *= material.normalStrength;
+    
+    
+    float3 nNormal = normalize(input.normal);
+    float3 T = normalize(input.tangent - nNormal * dot(input.tangent, nNormal));
+    float3 B = cross(nNormal, T);
+    float3x3 TBN = float3x3(T, B, nNormal);
+    float3 N = normalize(mul(normal, TBN));
+    
     float3 V = normalize(frame.cameraPosition - input.worldPosition);
     for (uint i = 0; i < lights.count; i++)
     {
-        calculateLighting(lights.lights[i], material, input.worldPosition, normalize(input.normal), V, diffuse, specular);
+        calculateLighting(lights.lights[i], material, input.worldPosition, N, V, diffuse, specular);
     }
     output.color = float4((albedo.rgb * diffuse) + (specular * material.specularColor * specularMask) + emissive, albedo.a);
     

@@ -51,6 +51,7 @@
       "tag": "Ogre",
       "active": false,
       "transform": {
+        "rotation": [ 0, 0, 0 ],
         "position": [ 0, 0, 0 ]
       },
       "components": [
